@@ -1,1 +1,3 @@
 fix for multi byte characters, basically just checking on the message printing, playing with non ascii languages is already fine
+
+have better help format, I'm just lazy to do it now
