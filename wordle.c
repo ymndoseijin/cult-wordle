@@ -357,10 +357,6 @@ int parse_argument(char *argument)
 int main(int argc, char *argv[])
 {
     command_name = argv[0];
-    if (argc < 2) {
-        printf("not enough arguments!");
-        return -1;
-    }
 
     for (int i = 1; i < argc; i++) {
         int response = parse_argument(argv[i]);
