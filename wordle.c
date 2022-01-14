@@ -15,6 +15,9 @@
 
 #define FIXED_NUM 13783815777230004908
 #define HELP 6951207451432
+#define VERSION 249805560270004805
+#define CHETER 7569864722246490
+#define OBSCURE 249805551112946930
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -234,7 +237,6 @@ void invalid(char *c, char **message_ptr)
 
 int word_in_dict(char *word)
 {
-    return 1;
     int valid = 0;
     for (size_t i = 0; i < dictionary_offset; i++)
         if (strcmp(*(dictionary+i), word) == 0)
@@ -245,7 +247,7 @@ int word_in_dict(char *word)
 
 void help(void)
 {
-    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game", command_name, command_name);
+    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game, by default, off\n", command_name, command_name);
 }
 
 void version(void)
@@ -256,30 +258,43 @@ void version(void)
 int parse_argument(char *argument)
 {
     if (!next_num) {
+        /* long arguments, they have been manually hashed, not too hard */
         switch (hash(argument)) {
             case FIXED_NUM:
+                printf("foi\n");
                 next_num = 1;
                 return 1;
-                break;
             case HELP:
                 help();
                 return 0;
+            case VERSION:
+                version();
+                return 0;
+            case CHETER:
+                cheater = 1;
+                printf("CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER\n");
+                return 1;
+            case OBSCURE:
+                obscured = 1;
+                return 1;
             default:
                 break;
         }                
+        printf("depois do hash\n");
         if (argument[0] == '-') {
             char *clone_buf = malloc(sizeof(char)*strlen(argument));
             strcpy(clone_buf, argument);
             int return_after = 0;
             while (*clone_buf != '\0') {
                 char cs = *clone_buf;
+                printf("%c\n", cs);
                 switch (cs) {
                     case 'h':
                         help();
                         return 0;
                     case 'v':
                         version();
-                        break;
+                        return 0;
                     case 'o':
                         obscured = 1;
                         break;
