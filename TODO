@@ -1,0 +1,1 @@
+fix for multi byte characters, basically just checking on the message printing, playing with non ascii languages is already fine
