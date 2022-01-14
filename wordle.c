@@ -61,6 +61,13 @@ const unsigned long hash(const char *str) {
     return hash;
 }
 
+size_t utf8len(char *s)
+{
+    size_t len = 0;
+    for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
+    return len;
+}
+
 char apostrophe[2] = {'\'','s'};
 char *dictionary[DICTIONARY_SIZE];
 char *game_string;
@@ -204,25 +211,6 @@ char *choose_random_word(void)
     return *(dictionary+offset);
 }
 
-int get_input(char **input_ptr)
-{
-    int valid = 0;
-    char *input = *input_ptr;
-
-    while (!valid) {
-        printf("> ");
-        if (fgets(input, WORD_SIZE, stdin) != NULL) {
-            filter_input_word(&input);
-            int space_answer = strchr(input, ' ') ? 1 : 0;
-            int size_answer = strlen(input) != strlen(game_string);
-            if (!(space_answer || size_answer))
-                valid = 1;
-        } else {
-            return -1;
-        }
-    }
-    return 0;
-}
         
 void valid_order(char *c, char **message_ptr)
 {
@@ -251,6 +239,7 @@ void invalid(char *c, char **message_ptr)
 int word_in_dict(char *word)
 {
     int valid = 0;
+    return 1;
     for (size_t i = 0; i < dictionary_offset; i++)
         if (strcmp(*(dictionary+i), word) == 0)
             valid = 1;
@@ -267,6 +256,7 @@ void version(void)
 {
     printf("people who do version control are retards\n");
 }
+
 
 int parse_argument(char *argument)
 {
@@ -357,6 +347,52 @@ int parse_argument(char *argument)
     return 1;
 }
 
+int character_response(char c, int word_offset, char **message_ptr, char character_set[WORD_SIZE])
+{
+    char *message = *message_ptr;
+    char character[2] = {c, '\0'};
+    if (game_string[word_offset] == c) {
+        valid_order(character, &message);
+        
+        if ((c & 0xC0) != 0x80)
+            valid_order("■ ", &output_message);
+        return 1;
+    } else {
+        if (char_in_buf(character_set, c, WORD_SIZE) != 0) {
+            valid_inside(character, &message);
+            if ((c & 0xC0) != 0x80)
+                valid_inside("■ ", &output_message);
+            return 0;
+        } else {
+            invalid(character, &message);
+            if ((c & 0xC0) != 0x80)
+                invalid("■ ", &output_message);
+            return 0;
+        }
+    }
+}
+
+int get_input(char **input_ptr)
+{
+    int valid = 0;
+    char *input = *input_ptr;
+
+    printf("> ");
+    if (fgets(input, WORD_SIZE, stdin) != NULL) {
+        filter_input_word(&input);
+        int space_answer = strchr(input, ' ') ? 1 : 0;
+        int size_answer = utf8len(input) == utf8len(game_string);
+        int inside_answer = word_in_dict(input);
+        printf("response from get_input is %i, %i, %i\n", space_answer, size_answer, inside_answer);
+        if (!space_answer && size_answer && inside_answer) {
+            return 0;
+        } else {
+            return -1;
+        }
+    } else {
+        return -1;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -401,69 +437,110 @@ int main(int argc, char *argv[])
     if (cheater)
         printf("%s\n", game_string);
     
-    printf("Today's word is %lu letters long.\n", strlen(game_string));
+    printf("Today's word is %lu letters long.\n", utf8len(game_string));
     char *input = malloc(sizeof(char)*WORD_SIZE);
     memset(input, 0, WORD_SIZE);
     printf("Give me a try.\n");
 
-    if (get_input(&input) < 0) {
-        goto finish;
-    }
 
     int correct = 1;
-    char *output_message = malloc(sizeof(char)*2048);
+    output_message = malloc(sizeof(char)*2048);
     memset(output_message, 0, sizeof(char)*2048);
     while (1) {
         char *message = malloc(sizeof(char)*2048);
         memset(message, 0, sizeof(char)*2048);
-        if (word_in_dict(input)) {
-            char *clone_input = &game_string[0];
-            char character_set[WORD_SIZE];
-            size_t cs_offset = 0;
+        if (get_input(&input) < 0) {
+            strcpy(message, "Invalid message, sorry.\n");
+            printf(message);
+            free(message);
+            continue;
+        }
+        char *clone_input = &game_string[0];
+        char character_set[WORD_SIZE];
+        size_t cs_offset = 0;
 
-            while (*clone_input != '\0') {
-                char c = *clone_input;
-                int will_add = char_in_buf(character_set, c, WORD_SIZE);
+        while (*clone_input != '\0') {
+            char c = *clone_input;
+            int will_add = char_in_buf(character_set, c, WORD_SIZE);
 
-                if (!will_add) {
-                    character_set[cs_offset] = c;
-                    cs_offset++;
-                }
-
-                clone_input++;
+            if (!will_add) {
+                character_set[cs_offset] = c;
+                cs_offset++;
             }
 
-            size_t word_offset = 0;
-            char *clone_word = &input[0];
-            while (*clone_word != '\0') {
-                char c = *clone_word;
+            clone_input++;
+        }
 
-                if (word_offset < strlen(game_string)) {
+        size_t word_offset = 0;
+        char *clone_word = &input[0];
+        int skip_word = 0;
+        int skip_input = 0;
+        while (*clone_word != '\0') {
+            char c = *clone_word;
+
+            if (word_offset >= strlen(game_string)) {
+                if (skip_word) {
                     char character[2] = {c, '\0'};
-                    if (game_string[word_offset] == c) {
-                        valid_order(character, &message);
-                        valid_order("■", &output_message);
-                    } else {
-                        if (char_in_buf(character_set, c, WORD_SIZE) != 0) {
-                            correct = 0;
-                            valid_inside(character, &message);
-                            valid_inside("■", &output_message);
-                        } else {
-                            correct = 0;
-                            invalid(character, &message);
-                            invalid("■", &output_message);
-                        }
-                    }
-                } else {
-                    strcpy(message, "Invalid message, sorry.");
-                    correct = -1;
+                    invalid(character, &message);
                 }
+                break;
+            }
+
+            int input_is_ascii = (c & 0x80) != 0x80;
+            int input_is_utf8_start = ((c & 0xC0) != 0x80) && input;
+
+            if (skip_input && (input_is_ascii || input_is_utf8_start)) {
+                skip_input = 0;
+                if (word_offset >= strlen(game_string)) break;
+            }
+
+            int word_is_ascii = (game_string[word_offset] & 0x80) == 0x80;
+            int word_is_utf8_start = ((game_string[word_offset] & 0xC0) == 0x80) && word_is_ascii;
+
+            if (skip_word && (word_is_ascii || word_is_utf8_start)) {
+                skip_word = 0;
+                char character[2] = {c, '\0'};
+                invalid(character, &message);
+                clone_word++;
+                c = *clone_word;
+                if (c == '\0') break;
+            }
+
+            int both_unicode = ((c & 0x80) == 0x80) && ((game_string[word_offset] & 0x80) == 0x80);
+            int both_normal = ((c & 0x80) != 0x80) && ((game_string[word_offset] & 0x80) != 0x80);
+
+
+            /*
+                might put this on an argument later, who knows
+                
+                printf("responding character (%c) %02x and (%c) %02x\n", c, c, game_string[word_offset], game_string[word_offset]);
+                printf("response for both %i %i\n", both_unicode, both_normal);
+                printf("response for just game_string %i\n", ((game_string[word_offset] & 0xC0) != 0x80));
+            */
+
+            if (both_unicode || both_normal) {
+
+                correct = (character_response(c, word_offset, &message, character_set) == 0) ? 0 : correct;
+
                 word_offset++;
                 clone_word++;
+            } else {
+                correct = 0;
+                if ((c & 0x80) == 0x80) {
+                    if (!skip_input)
+                        skip_input = 1;
+                    char character[2] = {c, '\0'};
+                    invalid(character, &message);
+                    clone_word++;
+                }
+                
+                if ((game_string[word_offset] & 0x80) == 0x80) {
+                    if (!skip_word)
+                        skip_word = 1;
+                    word_offset++;
+                }
+
             }
-        } else {
-            strcpy(message, "Invalid message, sorry.");
-            correct = -1;
         }
 
         strcat(message, "\n");
@@ -477,10 +554,6 @@ int main(int argc, char *argv[])
             break;
         
         correct = 1;
-
-        if (get_input(&input) < 0) {
-            goto finish;
-        }
     }
     printf("That's it!\n");
 finish:
