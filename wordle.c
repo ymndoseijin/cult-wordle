@@ -450,21 +450,26 @@ int main(int argc, char *argv[])
                             invalid("■", &output_message);
                         }
                     }
+                } else {
+                    strcpy(message, "Invalid message, sorry.");
+                    correct = -1;
                 }
                 word_offset++;
                 clone_word++;
             }
         } else {
             strcpy(message, "Invalid message, sorry.");
-            correct = 0;
+            correct = -1;
         }
 
         strcat(message, "\n");
         printf(message);
         free(message);
-        strcat(output_message, "\n");
+
+        if (correct != -1)
+            strcat(output_message, "\n");
     
-        if (correct)
+        if (correct == 1)
             break;
         
         correct = 1;
@@ -475,7 +480,6 @@ int main(int argc, char *argv[])
     }
     printf("That's it!\n");
 finish:
-    strcat(output_message, "\n");
     printf(output_message);
     free(output_message);
     printf("\nfinishing up\n");
