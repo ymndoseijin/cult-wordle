@@ -30,6 +30,8 @@
 #define DICTIONARY_SIZE 500000
 #define WORD_SIZE 100
 
+char *command_name;
+
 int next_num = 0;
 int cheater = 0;
 int obscured = 0;
@@ -243,12 +245,12 @@ int word_in_dict(char *word)
 
 void help(void)
 {
-    printf("This is just a wordle clone, there isn't much to it at all\n");
+    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game", command_name, command_name);
 }
 
 void version(void)
 {
-    printf("people who do version control are idiots\n");
+    printf("people who do version control are retards\n");
 }
 
 int parse_argument(char *argument)
@@ -313,6 +315,7 @@ int parse_argument(char *argument)
 
 int main(int argc, char *argv[])
 {
+    command_name = argv[0];
     if (argc < 2) {
         printf("not enough arguments!");
         return -1;
