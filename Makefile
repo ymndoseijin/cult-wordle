@@ -26,9 +26,9 @@ clean:
 install: cult-wordle
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f cult-wordle $(DESTDIR)$(PREFIX)/bin
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/wordle-clone
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/cult-wordle
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/wordle-clone
+	rm -f $(DESTDIR)$(PREFIX)/bin/cult-wordle
 
 .PHONY: all options clean dist install uninstall
