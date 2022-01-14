@@ -18,6 +18,8 @@
 #define VERSION 249805560270004805
 #define CHETER 7569864722246490
 #define OBSCURE 249805551112946930
+#define RANDOM 7569865301282272
+#define SEED 6951207846496
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -34,14 +36,21 @@
 #define WORD_SIZE 100
 
 char *command_name;
+char *output_message;
 
 int next_num = 0;
+int next_seed = 0;
+
+int set_arg_seed = 0;
+/* Default values */
 int cheater = 0;
 int obscured = 0;
+
+int random = 0;
+int arg_seed = 0;
+
 long force_num = 0;
-/* Default value */
 char *path = "/usr/share/dict/words";
-char *output_message;
 
 const unsigned long hash(const char *str) {
     unsigned long hash = 5381;  
@@ -247,7 +256,7 @@ int word_in_dict(char *word)
 
 void help(void)
 {
-    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game, by default, off\n", command_name, command_name);
+    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game, by default, off\n  -r, --random set seed to random mode, default daily seed\n  -s, --seed set [seed] seed to [seed], default daily seed\n", command_name, command_name);
 }
 
 void version(void)
@@ -257,11 +266,19 @@ void version(void)
 
 int parse_argument(char *argument)
 {
-    if (!next_num) {
+    if (next_num) {
+        char *endptr = malloc(sizeof(char)*strlen(argument));
+        force_num = strtol(argument, &endptr, 10);
+        next_num = 0;
+    } else if (next_seed) {
+        char *endptr = malloc(sizeof(char)*strlen(argument));
+        arg_seed = strtol(argument, &endptr, 10);
+        next_seed = 0;
+        set_arg_seed = 1;
+    } else {
         /* long arguments, they have been manually hashed, not too hard */
         switch (hash(argument)) {
             case FIXED_NUM:
-                printf("foi\n");
                 next_num = 1;
                 return 1;
             case HELP:
@@ -270,6 +287,14 @@ int parse_argument(char *argument)
             case VERSION:
                 version();
                 return 0;
+            case RANDOM:
+                random = 1;
+                next_seed = 0;
+                return 1;
+            case SEED:
+                random = 0;
+                next_seed = 1;
+                return 1;
             case CHETER:
                 cheater = 1;
                 printf("CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER\n");
@@ -280,14 +305,13 @@ int parse_argument(char *argument)
             default:
                 break;
         }                
-        printf("depois do hash\n");
         if (argument[0] == '-') {
             char *clone_buf = malloc(sizeof(char)*strlen(argument));
             strcpy(clone_buf, argument);
             int return_after = 0;
+            clone_buf++;
             while (*clone_buf != '\0') {
                 char cs = *clone_buf;
-                printf("%c\n", cs);
                 switch (cs) {
                     case 'h':
                         help();
@@ -301,11 +325,17 @@ int parse_argument(char *argument)
                     case 'n':
                         next_num = 1;
                         break;
+                    case 'r':
+                        random = 1;
+                        next_seed = 0;
+                        break;
+                    case 's':
+                        random = 0;
+                        next_seed = 1;
+                        break;
                     case 'c':
                         cheater = 1;
                         printf("CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER CHETER\n");
-                        break;
-                    case '-':
                         break;
                     default:
                         printf("Invalid argument %c.\n", cs);
@@ -318,10 +348,6 @@ int parse_argument(char *argument)
         } else {
             path = argument;
         }
-    } else {
-        char *endptr = malloc(sizeof(char)*strlen(argument));
-        force_num = strtol(argument, &endptr, 10);
-        next_num = 0;
     }
 
     return 1;
@@ -355,14 +381,22 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    struct timespec ts;    
-    clock_gettime(CLOCK_REALTIME, &ts);
-    struct tm *my_tm = localtime(&ts.tv_sec);
-    struct simple_date date = { my_tm->tm_year, my_tm->tm_mon, my_tm->tm_mday };
-    union hacky seed;
-    seed.date = date;
+    unsigned int seed;
+    if (set_arg_seed) {
+        seed = arg_seed;
+    } else if (random) {
+        seed = time(NULL);
+    } else {
+        struct timespec ts;    
+        clock_gettime(CLOCK_REALTIME, &ts);
+        struct tm *my_tm = localtime(&ts.tv_sec);
+        struct simple_date date = { my_tm->tm_year, my_tm->tm_mon, my_tm->tm_mday };
+        union hacky seed_union;
+        seed_union.date = date;
+        seed = seed_union.hack;
+    }
     
-    srand(seed.hack);
+    srand(seed);
     game_string = choose_random_word();
     if (cheater)
         printf("%s\n", game_string);
