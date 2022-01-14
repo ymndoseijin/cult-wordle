@@ -28,13 +28,13 @@
 
 #define BUFFER_SIZE 4096
 #define DICTIONARY_SIZE 500000
-//#define DICTIONARY_SIZE 3
 #define WORD_SIZE 100
 
 int next_num = 0;
 int cheater = 0;
 int obscured = 0;
 long force_num = 0;
+/* Default value */
 char *path = "/usr/share/dict/words";
 char *output_message;
 
@@ -173,7 +173,7 @@ char *choose_random_word(void)
     long unsigned int offset;
 
     if (loop_count >= RAND_MAX)
-        exit(-1); // fuck off
+        exit(-1); /* fuck off */
 
     if (loop_count != 0) {
         long unsigned int selector = (loop_count != 0) ? rand() % loop_count : 0;
