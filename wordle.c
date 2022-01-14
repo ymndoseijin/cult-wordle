@@ -32,7 +32,7 @@
 #define RESET "\x1B[0m"
 
 #define BUFFER_SIZE 4096
-#define DICTIONARY_SIZE 500000
+#define DICTIONARY_SIZE 1000000
 #define WORD_SIZE 100
 
 char *command_name;
@@ -143,7 +143,8 @@ int parse_buffer(char (*buffer_ptr)[BUFFER_SIZE], char (*word_ptr)[WORD_SIZE], c
                     strncpy(dictionary[dictionary_offset], word, word_offset+1);
 
                     if (dictionary_offset+1 >= DICTIONARY_SIZE) {
-                        return -1;
+                        printf("dictionary_offset larger than dictionary size\n");
+                        return 0;
                     }
                     dictionary_offset++;
                 } else {
@@ -173,10 +174,13 @@ int fill_buffer(int fd)
     char buffer[BUFFER_SIZE];
     ssize_t nrd;
     while ((nrd = read(fd, buffer, BUFFER_SIZE))) {
-        if (nrd < 0)
+        if (nrd < 0) {
+            printf("for some reason, read file failed\n");
             return -1;
-        if (parse_buffer(&buffer, &word, &compare_buffer, word_offset, nrd) < 0)
+        } if (parse_buffer(&buffer, &word, &compare_buffer, word_offset, nrd) < 0) {
+            printf("parse buffer failed\n");
             return -1;
+        }
     }
     return 0;
 }
