@@ -501,6 +501,7 @@ int main(int argc, char *argv[])
                 skip_word = 0;
                 char character[2] = {c, '\0'};
                 invalid(character, &message);
+                invalid("■ ", &output_message);
                 clone_word++;
                 c = *clone_word;
                 if (c == '\0') break;
@@ -531,6 +532,7 @@ int main(int argc, char *argv[])
                         skip_input = 1;
                     char character[2] = {c, '\0'};
                     invalid(character, &message);
+                    invalid("■ ", &output_message);
                     clone_word++;
                 }
                 
