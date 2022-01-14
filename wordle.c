@@ -46,7 +46,7 @@ int set_arg_seed = 0;
 int cheater = 0;
 int obscured = 0;
 
-int random = 0;
+int arg_random = 0;
 int arg_seed = 0;
 
 long force_num = 0;
@@ -292,11 +292,11 @@ int parse_argument(char *argument)
                 version();
                 return 0;
             case RANDOM:
-                random = 1;
+                arg_random = 1;
                 next_seed = 0;
                 return 1;
             case SEED:
-                random = 0;
+                arg_random = 0;
                 next_seed = 1;
                 return 1;
             case CHETER:
@@ -330,11 +330,11 @@ int parse_argument(char *argument)
                         next_num = 1;
                         break;
                     case 'r':
-                        random = 1;
+                        arg_random = 1;
                         next_seed = 0;
                         break;
                     case 's':
-                        random = 0;
+                        arg_random = 0;
                         next_seed = 1;
                         break;
                     case 'c':
@@ -384,7 +384,7 @@ int main(int argc, char *argv[])
     unsigned int seed;
     if (set_arg_seed) {
         seed = arg_seed;
-    } else if (random) {
+    } else if (arg_random) {
         seed = time(NULL);
     } else {
         struct timespec ts;    
