@@ -251,12 +251,22 @@ int word_in_dict(char *word)
 
 void help(void)
 {
-    printf("usage: %s [option] ...\n       %s [option] ... dictionary-file\nThis is just a wordle clone, there isn't much to it at all\n\n  -h, --help shows this help\n  -v, --version outputs the \"version\"\n  -o, --obscure obscure final score letters\n  -c, --cheter CHETER!!\n  -n, --fixed-num [length] fixes word length in game, by default, off\n  -r, --random set seed to random mode, default daily seed\n  -s, --seed set [seed] seed to [seed], default daily seed\n", command_name, command_name);
+    printf("This is just a wordle clone, there isn't much to it at all\n");
+    printf("usage: %s [option] ...\n", command_name);
+    printf("       %s [option] ... dictionary-file\n\n", command_name);
+    printf("  -h, --help shows this help\n");
+    printf("  -v, --version outputs the \"version\"\n");
+    printf("  -o, --obscure obscure final score letters\n");
+    printf("  -c, --cheter CHETER!!\n");
+    printf("  -n, --fixed-num [length] fixes word length in game, by default, off\n");
+    printf("  -r, --random set seed to random mode, default daily seed\n");
+    printf("  -s, --seed set [seed] seed to [seed], default daily seed\n");
 }
 
 void version(void)
 {
-    printf("people who do version control are retards\n");
+    printf("%s built on %s\n", command_name, __DATE__);
+    printf("No copyright at all.\n");
 }
 
 
