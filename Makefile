@@ -23,7 +23,7 @@ cult-wordle: $(OBJ)
 clean:
 	rm -f cult-wordle $(OBJ)
 
-install: st
+install: cult-wordle
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f st $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/wordle-clone
