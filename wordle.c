@@ -120,6 +120,7 @@ int parse_buffer(char (*buffer_ptr)[BUFFER_SIZE], char (*word_ptr)[WORD_SIZE], c
     char *compare_buffer = *compare_ptr;    
 
     char *clone_buffer = &buffer[0];
+    size_t word_len = 0;
 
     while (clone_buffer < buffer + nrd) {
         char c = *clone_buffer;
@@ -137,9 +138,10 @@ int parse_buffer(char (*buffer_ptr)[BUFFER_SIZE], char (*word_ptr)[WORD_SIZE], c
                 if (!ignore_word) {
                     word[word_offset] = c;
                     word_offset++;
+                    if ((c & 0xC0) != 0x80) word_len++;
                 }
             } else {
-                if (force_num && word_offset != force_num)
+                if (force_num && (word_len != force_num))
                     ignore_word = 1;
                 if (word_offset <= 2)
                     ignore_word = 1;
@@ -161,6 +163,7 @@ int parse_buffer(char (*buffer_ptr)[BUFFER_SIZE], char (*word_ptr)[WORD_SIZE], c
                 memset(word, 0, WORD_SIZE);
                 memset(compare_buffer, 0, 2);
                 word_offset = 0;
+                word_len = 0;
             }
         }
         clone_buffer++;
@@ -239,7 +242,6 @@ void invalid(char *c, char **message_ptr)
 int word_in_dict(char *word)
 {
     int valid = 0;
-    return 1;
     for (size_t i = 0; i < dictionary_offset; i++)
         if (strcmp(*(dictionary+i), word) == 0)
             valid = 1;
@@ -383,7 +385,7 @@ int get_input(char **input_ptr)
         int space_answer = strchr(input, ' ') ? 1 : 0;
         int size_answer = utf8len(input) == utf8len(game_string);
         int inside_answer = word_in_dict(input);
-        printf("response from get_input is %i, %i, %i\n", space_answer, size_answer, inside_answer);
+        /* printf("response from get_input is %i, %i, %i\n", space_answer, size_answer, inside_answer); */
         if (!space_answer && size_answer && inside_answer) {
             return 0;
         } else {
