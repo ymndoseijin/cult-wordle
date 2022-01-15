@@ -397,9 +397,9 @@ int get_input(char **input_ptr)
         int inside_answer = word_in_dict(input);
         /* printf("response from get_input is %i, %i, %i\n", space_answer, size_answer, inside_answer); */
         if (!space_answer && size_answer && inside_answer) {
-            return 0;
+            return 1;
         } else {
-            return -1;
+            return 0;
         }
     } else {
         return -1;
@@ -461,11 +461,14 @@ int main(int argc, char *argv[])
     while (1) {
         char *message = malloc(sizeof(char)*2048);
         memset(message, 0, sizeof(char)*2048);
-        if (get_input(&input) < 0) {
+        int response = get_input(&input);
+        if (response == 0) {
             strcpy(message, "Invalid message, sorry.\n");
             printf(message);
             free(message);
             continue;
+        } else if (response == -1) {
+            goto finish;
         }
         char *clone_input = &game_string[0];
         char character_set[WORD_SIZE];
