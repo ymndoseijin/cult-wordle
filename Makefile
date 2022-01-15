@@ -31,4 +31,4 @@ install: cult-wordle
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/cult-wordle
 
-.PHONY: all options clean dist install uninstall
+.PHONY: all options clean install uninstall
