@@ -445,13 +445,10 @@ int main(int argc, char *argv[])
     if (set_arg_seed) {
         seed = arg_seed;
     } else if (arg_random) {
-        struct timeb time_now;
-        ftime(&time_now);
-        seed = time_now.time*1000+time_now.millitm;
+        seed = time(NULL);
     } else {
-        struct timeb time_now;
-        ftime(&time_now);
-        struct tm *my_tm = localtime(&time_now.time);
+        time_t time_now = time(NULL);
+        struct tm *my_tm = localtime(&time_now);
         struct simple_date date = { my_tm->tm_year, my_tm->tm_mon, my_tm->tm_mday };
         union hacky seed_union;
         seed_union.date = date;
