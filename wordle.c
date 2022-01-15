@@ -141,14 +141,17 @@ int parse_buffer(char (*buffer_ptr)[BUFFER_SIZE], char (*word_ptr)[WORD_SIZE], c
                     if ((c & 0xC0) != 0x80) word_len++;
                 }
             } else {
-                if (force_num && (word_len != force_num))
+                if (force_num && (word_len != force_num)) {
                     ignore_word = 1;
-                if (word_offset <= 2)
+                }
+                if (word_offset <= 2) {
                     ignore_word = 1;
+                }
                 if (!ignore_word) {
                     word[word_offset] = '\0';
 
                     dictionary[dictionary_offset] = malloc(sizeof(char)*word_offset+1);
+                    memset(dictionary[dictionary_offset], 0, word_offset+1);
                     strncpy(dictionary[dictionary_offset], word, word_offset+1);
 
                     if (dictionary_offset+1 >= DICTIONARY_SIZE) {
@@ -242,9 +245,12 @@ void invalid(char *c, char **message_ptr)
 int word_in_dict(char *word)
 {
     int valid = 0;
-    for (size_t i = 0; i < dictionary_offset; i++)
-        if (strcmp(*(dictionary+i), word) == 0)
+    for (size_t i = 0; i < dictionary_offset; i++) {
+        if (strcmp(*(dictionary+i), word) == 0) {
             valid = 1;
+            break;
+        }
+    }
     
     return valid;
 }
@@ -407,7 +413,6 @@ int get_input(char **input_ptr)
         int space_answer = strchr(input, ' ') ? 1 : 0;
         int size_answer = utf8len(input) == utf8len(game_string);
         int inside_answer = word_in_dict(input);
-        /* printf("response from get_input is %i, %i, %i\n", space_answer, size_answer, inside_answer); */
         if (!space_answer && size_answer && inside_answer) {
             return 1;
         } else {
