@@ -10,8 +10,8 @@
 #include <math.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/timeb.h>
 #include <stdint.h>
-#include <uchar.h>
 
 #define FIXED_NUM 13783815777230004908
 #define HELP 6951207451432
@@ -366,19 +366,31 @@ int character_response(char c, int word_offset, char **message_ptr, char charact
     if (game_string[word_offset] == c) {
         valid_order(character, &message);
         
-        if ((c & 0xC0) != 0x80)
-            valid_order("■ ", &output_message);
+        if ((c & 0xC0) != 0x80) {
+            if (obscured)
+                valid_order("■ ", &output_message);
+            else
+                valid_order(character, &output_message);
+        }
         return 1;
     } else {
         if (char_in_buf(character_set, c, WORD_SIZE) != 0) {
             valid_inside(character, &message);
-            if ((c & 0xC0) != 0x80)
-                valid_inside("■ ", &output_message);
+            if ((c & 0xC0) != 0x80) {
+                if (obscured)
+                    valid_inside("■ ", &output_message);
+                else
+                    valid_inside(character, &output_message);
+            }
             return 0;
         } else {
             invalid(character, &message);
-            if ((c & 0xC0) != 0x80)
-                invalid("■ ", &output_message);
+            if ((c & 0xC0) != 0x80) {
+                if (obscured)
+                    invalid("■ ", &output_message);
+                else
+                    invalid(character, &output_message);
+            }
             return 0;
         }
     }
@@ -433,11 +445,13 @@ int main(int argc, char *argv[])
     if (set_arg_seed) {
         seed = arg_seed;
     } else if (arg_random) {
-        seed = time(NULL);
+        struct timeb time_now;
+        ftime(&time_now);
+        seed = time_now.time*1000+time_now.millitm;
     } else {
-        struct timespec ts;    
-        clock_gettime(CLOCK_REALTIME, &ts);
-        struct tm *my_tm = localtime(&ts.tv_sec);
+        struct timeb time_now;
+        ftime(&time_now);
+        struct tm *my_tm = localtime(&time_now.time);
         struct simple_date date = { my_tm->tm_year, my_tm->tm_mon, my_tm->tm_mday };
         union hacky seed_union;
         seed_union.date = date;
