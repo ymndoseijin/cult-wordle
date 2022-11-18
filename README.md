@@ -1,6 +1,6 @@
 this is an old wordle clone I made using C that uses words files, I got it to compile to DOS as well, it's in the releases page. You need to supply it with a words file
 
-[picture of the game](https://github.com/ymndoseijin/cult-wordle/blob/master/2022-02-04-011828_860x817_scrot.png?raw=true)
+![picture of the game](https://raw.githubusercontent.com/ymndoseijin/cult-wordle/master/2022-02-04-011828_860x817_scrot.png)
 
 it also supports utf-8
 
