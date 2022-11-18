@@ -272,7 +272,6 @@ void help(void)
 void version(void)
 {
     printf("%s built on %s\n", command_name, __DATE__);
-    printf("No copyright at all.\n");
 }
 
 
